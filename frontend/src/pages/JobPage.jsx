@@ -10,8 +10,27 @@ const JobPage = () => {
     console.log(JobPage);
   };
 
-  if (!job) {
-    return <div>Loading...</div>;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`/api/jobs/${id}`);
+        if (!res.ok) {
+          console.error("Failed fetching job", res.status);
+          setJob(null);
+          return;
+        }
+        const data = await res.json();
+        setJob(data);
+      } catch (err) {
+        console.error(err);
+        setJob(null);
+      }
+    };
+    if (id) fetchData();
+  }, [id])
+
+  if (job === null) {
+    return <div className="job-details">Loading...</div>;
   }
 
   return (
