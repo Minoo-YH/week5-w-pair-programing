@@ -1,30 +1,51 @@
-import JobListing from "../components/JobListing";
+
 import { useEffect, useState } from "react";
+import JobListing from "../components/JobListing";
 
-const Home = () => {
+const HomePage = () => {
   const [jobs, setJobs] = useState([]);
-  useEffect(() => {
-    const fetchJob = async () => {
-      const response = await fetch(`/api/jobs`);
-      const json = await response.json();
 
-      if (response.ok) {
-        setJobs(json);
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const res = await fetch("/api/jobs");
+
+        if (!res.ok) {
+          console.error("Failed fetching jobs", res.status);
+          setJobs([]);
+          return;
+        }
+
+        const data = await res.json();
+        setJobs(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error(err);
+        setJobs([]);
       }
-      console.log(jobs)
     };
 
-    fetchJob();
+    fetchJobs();
   }, []);
+
+  if (!jobs || jobs.length === 0) {
+    return <p>No jobs found</p>;
+  }
+
   return (
-    <div className="home">
-      <div className="job-list">
-        {jobs.length === 0 && <p>No jobs found</p>}
-        {jobs.length !== 0 &&
-          jobs.map((job) => <JobListing key={job.id} {...job} />)}
-      </div>
+    <div>
+      {jobs.map((job) => {
+        const jobId = job.id ?? job._id;
+        return (
+          <div key={jobId} data-testid={`job-listing-${jobId}`}>
+            <JobListing job={job} />
+          </div>
+        );
+      })}
     </div>
   );
 };
 
-export default Home;
+export default HomePage;
+
+
+
